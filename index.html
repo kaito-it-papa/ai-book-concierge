@@ -1,184 +1,158 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html>
 <head>
+    <base target="_top">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI選書コンシェルジュ | あなたにぴったりの一冊を</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary-color: #2c3e50;
-            --accent-color: #e67e22;
-            --bg-color: #f8f9fa;
-        }
-        body {
-            font-family: 'Noto Sans JP', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--primary-color);
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        h1 {
-            text-align: center;
-            font-size: 1.5rem;
-            color: var(--primary-color);
-            margin-bottom: 10px;
-        }
-        .description {
-            font-size: 0.9rem;
-            color: #666;
-            text-align: center;
-            margin-bottom: 25px;
-        }
-        .input-group {
-            margin-bottom: 20px;
-        }
-        input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            box-sizing: border-box;
-            font-size: 1rem;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-        input[type="text"]:focus {
-            border-color: var(--accent-color);
-        }
-        button {
-            width: 100%;
-            padding: 14px;
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: opacity 0.3s;
-        }
-        button:hover {
-            opacity: 0.9;
-        }
-        button:disabled {
-            background-color: #ccc;
-        }
-        /* ローディングアニメーション */
-        #loading {
-            display: none;
-            text-align: center;
-            margin-top: 20px;
-        }
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--accent-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    <meta property="og:title" content="AI選書コンシェルジュ Pro">
+    <meta property="og:description" content="AIがお悩みやライフスタイルに合わせて、最高の一冊を厳選します。">
+    <meta property="og:image" content="https://i.imgur.com/8NfFIn9.png">
+    <meta name="twitter:card" content="summary_large_image">
 
-        /* 結果カードのデザイン */
-        .result-card {
-            display: none;
-            margin-top: 30px;
-            padding: 20px;
-            border: 1px solid #eee;
-            border-radius: 10px;
-            background-color: #fffaf0;
-        }
-        .book-title {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #d35400;
-            margin-bottom: 10px;
-        }
-        .rakuten-button {
-            display: block;
-            text-align: center;
-            background-color: #bf0000; /* 楽天カラー */
-            color: white;
-            text-decoration: none;
-            padding: 12px;
-            border-radius: 6px;
-            font-weight: bold;
-            margin-top: 15px;
-        }
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* あなたの元のスタイルをすべて継承 */
+        :root { --rakuten-red: #bf0000; --x-black: #000000; --fb-blue: #1877F2; }
+        body { background-color: #f4f7f6; font-family: 'Helvetica Neue', Arial, sans-serif; padding: 20px; }
+        .container { max-width: 850px; margin: auto; }
+        .input-card { border: none; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); padding: 30px; background: white; margin-bottom: 30px; }
+        .btn-search { background-color: var(--rakuten-red); color: white; border: none; padding: 15px; border-radius: 10px; font-weight: bold; width: 100%; transition: background-color 0.2s; }
+        .btn-search:hover { background-color: #9d0000; color: white; }
+        .book-link { text-decoration: none !important; color: inherit !important; display: block; margin-bottom: 25px; transition: transform 0.2s; border-radius: 15px; }
+        .book-link:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+        .book-card { background: white; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); display: flex; overflow: hidden; position: relative; }
+        .book-img-container { width: 180px; min-width: 180px; padding: 15px; display: flex; align-items: center; justify-content: center; background: #fff; }
+        .book-img { width: 100%; height: auto; object-fit: contain; }
+        .book-detail { padding: 25px; flex-grow: 1; display: flex; flex-direction: column; border-left: 1px solid #f0f0f0; }
+        .price { color: var(--rakuten-red); font-weight: bold; font-size: 1.3rem; }
+        .review-info { font-size: 0.85rem; color: #666; margin-bottom: 8px; }
+        .sns-container { position: absolute; top: 12px; right: 12px; z-index: 20; display: flex; gap: 8px; }
+        .btn-sns { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white !important; font-size: 0.9rem; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: opacity 0.2s; text-decoration: none; border: none; }
+        #loading { display: none; text-align: center; padding: 50px; }
+        .affiliate-notice { font-size: 0.75rem; color: #999; text-align: center; margin-top: 40px; }
+        @media (max-width: 600px) { .book-card { flex-direction: column; } .book-img-container { width: 100%; height: 200px; } .book-detail { border-left: none; border-top: 1px solid #f0f0f0; } }
     </style>
 </head>
 <body>
+    <div class="container">
+        <h2 class="text-center mb-4 fw-bold" style="color: var(--rakuten-red);">📚 AI選書コンシェルジュ Pro</h2>
+        
+        <div class="input-card">
+            <form id="searchForm">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">年代</label>
+                        <select id="age" class="form-select">
+                            <option value="10代">10代</option><option value="20代">20代</option><option value="30代">30代</option><option value="40代">40代</option><option value="50代〜">50代〜</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">職業</label>
+                        <select id="occupation" class="form-select">
+                            <option value="会社員">会社員</option><option value="フリーランス">フリーランス</option><option value="経営・役員">経営・役員</option><option value="主婦">主婦</option><option value="学生">学生</option><option value="その他">その他</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-bold">希望スタイル</label>
+                        <select id="style" class="form-select">
+                            <option value="初心者向け・図解">初心者向け・図解でわかりやすい</option><option value="理論的・専門書">理論からしっかり学べる専門書</option><option value="物語・小説形式">読みやすい物語・小説形式</option><option value="エッセイ・体験談">等身大の体験談・エッセイ</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-bold">性別</label>
+                        <div class="d-flex gap-3">
+                            <div class="form-check"><input class="form-check-input" type="radio" name="gender" value="女性" checked id="g_f"><label class="form-check-label" for="g_f">女性</label></div>
+                            <div class="form-check"><input class="form-check-input" type="radio" name="gender" value="男性" id="g_m"><label class="form-check-label" for="g_m">男性</label></div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-bold">お悩み（自由入力）</label>
+                        <textarea id="trouble" class="form-control" rows="3" placeholder="例：仕事以外の新しい刺激が欲しい。"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <button type="button" id="submitBtn" class="btn btn-search py-3 mt-2">AIに本を厳選してもらう</button>
+                    </div>
+                </div>
+            </form>
+        </div>
 
-<div class="container">
-    <h1>AI選書コンシェルジュ</h1>
-    <p class="description">Geminiがあなたのお悩みに合わせて、楽天市場から最高の一冊を提案します。</p>
-
-    <div class="input-group">
-        <input type="text" id="userInput" placeholder="例：40代 事務職 キャリアの悩み">
+        <div id="loading">
+            <div class="spinner-border text-danger" role="status"></div>
+            <p class="mt-3 text-muted">AIコンシェルジュがあなたにおススメの書籍を探しています…</p>
+        </div>
+        <div id="results"></div>
+        
+        <div class="affiliate-notice">
+            <p>【広告】当サイトは楽天アフィリエイトプログラムに参加しています。</p>
+        </div>
     </div>
-    <button id="searchBtn" onclick="searchBooks()">AIに相談する</button>
 
-    <div id="loading">
-        <div class="spinner"></div>
-        <p>Geminiが本棚を探しています...</p>
-    </div>
+    <script>
+        // ★重要：ご自身のURLをここに
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbx-KwQgGVRYouZXwTrHgvjChQVRYLdJEgtdD_B8DdDuTuK7EwQ5yyfGWKelj8KXvCdbsw/exec";
+        const REAL_APP_URL = window.location.href; // 現在のGitHubのURLを取得
 
-    <div id="result" class="result-card">
-        <div id="bookTitle" class="book-title"></div>
-        <div id="bookDescription"></div>
-        <a id="rakutenLink" class="rakuten-button" href="#" target="_blank">楽天で詳細を見る</a>
-    </div>
-</div>
+        document.getElementById('submitBtn').addEventListener('click', searchBooks);
 
-<script>
-    async function searchBooks() {
-        const input = document.getElementById('userInput').value;
-        if (!input) return;
+        async function searchBooks() {
+            var age = document.getElementById('age').value;
+            var occupation = document.getElementById('occupation').value;
+            var style = document.getElementById('style').value;
+            var gender = document.querySelector('input[name="gender"]:checked').value;
+            var trouble = document.getElementById('trouble').value;
 
-        const btn = document.getElementById('searchBtn');
-        const loading = document.getElementById('loading');
-        const resultCard = document.getElementById('result');
+            if (!trouble) { alert('お悩みを入力してください。'); return; }
 
-        // 状態のリセット
-        btn.disabled = true;
-        loading.style.display = 'block';
-        resultCard.style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').innerHTML = '';
 
-        // ★あなたのGASウェブアプリURLに書き換えてください
-        const gasUrl = 'https://script.google.com/macros/s/AKfycbx-KwQgGVRYouZXwTrHgvjChQVRYLdJEgtdD_B8DdDuTuK7EwQ5yyfGWKelj8KXvCdbsw/exec';
-
-        try {
-            const response = await fetch(gasUrl, {
-                method: 'POST',
-                body: JSON.stringify({ keyword: input })
-            });
-            const data = await response.json();
-
-            // 結果の反映
-            document.getElementById('bookTitle').innerText = data.bookTitle;
-            document.getElementById('bookDescription').innerText = data.description;
-            document.getElementById('rakutenLink').href = data.url;
-            
-            resultCard.style.display = 'block';
-        } catch (e) {
-            alert('エラーが発生しました。時間を置いて再度お試しください。');
-        } finally {
-            btn.disabled = false;
-            loading.style.display = 'none';
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ age, gender, occupation, style, trouble })
+                });
+                const books = await response.json();
+                displayResults(books);
+            } catch (err) {
+                document.getElementById('loading').style.display = 'none';
+                alert('エラーが発生しました: ' + err);
+            }
         }
-    }
-</script>
 
+        function displayResults(books) {
+            document.getElementById('loading').style.display = 'none';
+            var resultsDiv = document.getElementById('results');
+            if (!books || books.length === 0) {
+                resultsDiv.innerHTML = '<p class="text-center">本が見つかりませんでした。</p>';
+                return;
+            }
+
+            var html = '<h4 class="mb-4 fw-bold text-center">AIが ' + books.length + ' 冊を厳選しました</h4>';
+            books.forEach(function(book) {
+                var bookTitleClean = book.title.replace(/'/g, "").replace(/"/g, "");
+                var shareText = encodeURIComponent('AIが私に選んでくれた本は『' + bookTitleClean + '』でした！\n#AI選書コンシェルジュ');
+                var appUrlEncoded = encodeURIComponent(REAL_APP_URL);
+                var xShare = 'https://twitter.com/intent/tweet?text=' + shareText + '&url=' + appUrlEncoded;
+
+                html += '<div class="position-relative mb-4">' +
+                        '<div class="sns-container">' +
+                        '<a href="' + xShare + '" target="_blank" class="btn-sns bg-x"><i class="fa-brands fa-x-twitter"></i></a>' +
+                        '</div>' +
+                        '<a href="' + book.affiliateUrl + '" target="_blank" class="book-link">' +
+                        '<div class="book-card">' +
+                        '<div class="book-img-container"><img src="' + book.imageUrl + '" class="book-img"></div>' +
+                        '<div class="book-detail">' +
+                        '<h5 class="fw-bold mb-1">' + book.title + '</h5>' +
+                        '<div class="review-info"><span style="color:#ffc107;">★ ' + book.reviewAverage + '</span> (' + book.reviewCount + '件)</div>' +
+                        '<p class="small text-secondary flex-grow-1"><strong>💡 推奨理由:</strong> ' + book.reason + '</p>' +
+                        '<div class="d-flex justify-content-between align-items-center mt-2">' +
+                        '<span class="price">¥' + (book.price ? book.price.toLocaleString() : '---') + '</span>' +
+                        '<span class="btn btn-outline-danger btn-sm px-4 fw-bold">楽天で見る</span>' +
+                        '</div></div></div></a></div>';
+            });
+            resultsDiv.innerHTML = html;
+        }
+    </script>
 </body>
 </html>
