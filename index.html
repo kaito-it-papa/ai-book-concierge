@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>AI選書コンシェルジュ</title>
+    <style>
+        /* ここにCSSを書いてプロっぽいデザインにできます */
+        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; }
+        .result-card { border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>AI選書コンシェルジュ</h1>
+    <p>お悩みや興味のあることを入力してください。</p>
+    <input type="text" id="userInput" placeholder="例：30代 転職 勇気が出る本">
+    <button onclick="searchBooks()">診断する</button>
+
+    <div id="loading" style="display:none;">AIが考えています...</div>
+    <div id="result"></div>
+
+    <script>
+        async function searchBooks() {
+            const input = document.getElementById('userInput').value;
+            const resultDiv = document.getElementById('result');
+            const loading = document.getElementById('loading');
+            
+            loading.style.display = 'block';
+            resultDiv.innerHTML = '';
+
+            // GASのウェブアプリURLを指定
+            const gasUrl = 'https://script.google.com/macros/s/AKfycbx-KwQgGVRYouZXwTrHgvjChQVRYLdJEgtdD_B8DdDuTuK7EwQ5yyfGWKelj8KXvCdbsw/exec';
+
+            try {
+                const response = await fetch(gasUrl, {
+                    method: 'POST',
+                    body: JSON.stringify({ keyword: input })
+                });
+                const data = await response.json();
+
+                // 結果を表示
+                resultDiv.innerHTML = `
+                    <div class="result-card">
+                        <h3>${data.bookTitle}</h3>
+                        <p>${data.description}</p>
+                        <a href="${data.url}" target="_blank">楽天で詳細を見る</a>
+                    </div>
+                `;
+            } catch (e) {
+                resultDiv.innerHTML = 'エラーが発生しました。時間を置いて再度お試しください。';
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
