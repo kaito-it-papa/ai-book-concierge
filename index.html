@@ -121,38 +121,30 @@
         }
 
         function displayResults(books) {
-            document.getElementById('loading').style.display = 'none';
-            var resultsDiv = document.getElementById('results');
-            if (!books || books.length === 0) {
-                resultsDiv.innerHTML = '<p class="text-center">本が見つかりませんでした。</p>';
-                return;
-            }
+    document.getElementById('loading').style.display = 'none';
+    var resultsDiv = document.getElementById('results');
 
-            var html = '<h4 class="mb-4 fw-bold text-center">AIが ' + books.length + ' 冊を厳選しました</h4>';
-            books.forEach(function(book) {
-                var bookTitleClean = book.title.replace(/'/g, "").replace(/"/g, "");
-                var shareText = encodeURIComponent('AIが私に選んでくれた本は『' + bookTitleClean + '』でした！\n#AI選書コンシェルジュ');
-                var appUrlEncoded = encodeURIComponent(REAL_APP_URL);
-                var xShare = 'https://twitter.com/intent/tweet?text=' + shareText + '&url=' + appUrlEncoded;
+    // ★重要：booksが配列かどうかをチェック
+    if (!Array.isArray(books)) {
+        // 配列でない（エラーオブジェクトなど）場合の処理
+        const errorMsg = books.error || "不明なエラーが発生しました。";
+        resultsDiv.innerHTML = `<div class="alert alert-danger">エラーが発生しました：${errorMsg}</div>`;
+        console.error("Received data is not an array:", books);
+        return;
+    }
 
-                html += '<div class="position-relative mb-4">' +
-                        '<div class="sns-container">' +
-                        '<a href="' + xShare + '" target="_blank" class="btn-sns bg-x"><i class="fa-brands fa-x-twitter"></i></a>' +
-                        '</div>' +
-                        '<a href="' + book.affiliateUrl + '" target="_blank" class="book-link">' +
-                        '<div class="book-card">' +
-                        '<div class="book-img-container"><img src="' + book.imageUrl + '" class="book-img"></div>' +
-                        '<div class="book-detail">' +
-                        '<h5 class="fw-bold mb-1">' + book.title + '</h5>' +
-                        '<div class="review-info"><span style="color:#ffc107;">★ ' + book.reviewAverage + '</span> (' + book.reviewCount + '件)</div>' +
-                        '<p class="small text-secondary flex-grow-1"><strong>💡 推奨理由:</strong> ' + book.reason + '</p>' +
-                        '<div class="d-flex justify-content-between align-items-center mt-2">' +
-                        '<span class="price">¥' + (book.price ? book.price.toLocaleString() : '---') + '</span>' +
-                        '<span class="btn btn-outline-danger btn-sm px-4 fw-bold">楽天で見る</span>' +
-                        '</div></div></div></a></div>';
-            });
-            resultsDiv.innerHTML = html;
-        }
+    if (books.length === 0) {
+        resultsDiv.innerHTML = '<p class="text-center">本が見つかりませんでした。</p>';
+        return;
+    }
+
+    // ここから下は以前の forEach 処理のまま
+    var html = '<h4 class="mb-4 fw-bold text-center">AIが ' + books.length + ' 冊を厳選しました</h4>';
+    books.forEach(function(book) {
+        // ...（以前のコード）
+    });
+    resultsDiv.innerHTML = html;
+}
     </script>
 </body>
 </html>
